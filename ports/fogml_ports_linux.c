@@ -17,7 +17,7 @@
 
 int fogml_random(int min, int max)
 {
-    return rand();
+    return min + (rand() % (max - min + 1));
 }
 
 void fogml_printf(char const *str)
