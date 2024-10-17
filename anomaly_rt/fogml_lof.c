@@ -28,7 +28,7 @@ float tinyml_lof_normal_distance_vec(float *vec_a, float *vec_b, int len) {
     //dist += abs(vec_a[i] - vec_b[i]);
   }
   //return dist;
-  return sqrt(dist);
+  return sqrtf(dist);
 }
 
 void tinyml_lof_k_neighbours_vec(float *vector, int *neighbours, tinyml_lof_config_t *config) {

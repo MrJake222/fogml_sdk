@@ -19,7 +19,7 @@ float distance(float *a, float* b, int k){
     for(int i=0; i<k; i++) {
         distance += pow2f(a[i] - b[i]);
     }
-    distance = sqrt(distance);
+    distance = sqrtf(distance);
     return distance;
 }
 

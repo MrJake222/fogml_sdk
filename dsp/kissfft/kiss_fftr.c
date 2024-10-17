@@ -51,8 +51,8 @@ kiss_fftr_cfg kiss_fftr_alloc(int nfft,int inverse_fft,void * mem,size_t * lenme
     kiss_fft_alloc(nfft, inverse_fft, st->substate, &subsize);
 
     for (i = 0; i < nfft/2; ++i) {
-        double phase =
-            -3.14159265358979323846264338327 * ((double) (i+1) / nfft + .5);
+        float phase =
+            -3.14159265358979323846264338327f * ((float) (i+1) / nfft + .5f);
         if (inverse_fft)
             phase *= -1;
         kf_cexp (st->super_twiddles+i,phase);
