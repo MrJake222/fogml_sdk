@@ -11,40 +11,33 @@
    limitations under the License.
 */
 
-#ifndef __FOGML_PORTS_H__
-#define __FOGML_PORTS_H__
-
-#ifdef ARDUINO
-#include <Arduino.h>
-#endif
-
-#if defined(__ZEPHYR__)
-#include <math.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <string.h>
-#include <zephyr.h>
-#include <random/rand32.h>
-#endif
-
 #if defined(__riscv)
-#include <math.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <string.h>
-#endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "fogml_ports.h"
 
-int fogml_random(int min, int max);
-void fogml_printf(char const *str);
-void fogml_printf_float(float number);
-void fogml_printf_int(int number);
+static unsigned long my_rand_state = 42;
 
-#ifdef __cplusplus
-} // extern "C"
-#endif
+int fogml_random(int min, int max)
+{
+    my_rand_state = (my_rand_state * 1103515245 + 12345) % 2147483648;
+    return min + (my_rand_state % (max - min + 1));
+}
+
+extern int printf_(const char* format, ...);
+
+void fogml_printf(char const *str)
+{
+    printf_("%s", str);
+};
+
+void fogml_printf_float(float number)
+{
+    printf_("%.2f", number);
+};
+
+void fogml_printf_int(int number)
+{
+    printf_("%d", number);
+};
 
 #endif
