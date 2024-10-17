@@ -13,9 +13,12 @@ add_library(${PROJECT_NAME}
 	ports/fogml_ports_arduino.cpp
 	anomaly/fogml_anomaly.c
 	scaler/fogml_scaler.c
+	internal/fogml_helper.c
 	)
 
-target_include_directories(${PROJECT_NAME} PUBLIC
-        .)
+target_include_directories(${PROJECT_NAME}
+	PUBLIC	.
+	PRIVATE	internal
+	)
 
 

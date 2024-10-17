@@ -12,6 +12,7 @@
 */
 
 #include "fogml_lof.h"
+#include "fogml_helper.h"
 
 #define LOF_VECTOR(i, config) &(config->data[i*config->vector_size])
 #define TINYML_MAX_DISTANCE  99999.0
@@ -23,7 +24,7 @@ float tinyml_lof_normal_distance_vec(float *vec_a, float *vec_b, int len) {
   float dist = 0;
 
   for(int i=0; i<len; i++) {
-    dist += pow(vec_a[i] - vec_b[i], 2);
+    dist += pow2f(vec_a[i] - vec_b[i]);
     //dist += abs(vec_a[i] - vec_b[i]);
   }
   //return dist;
