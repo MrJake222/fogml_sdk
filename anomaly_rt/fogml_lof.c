@@ -25,7 +25,7 @@ float tinyml_lof_normal_distance_vec(float *vec_a, float *vec_b, int len) {
 
   for(int i=0; i<len; i++) {
     dist += pow2f(vec_a[i] - vec_b[i]);
-    //dist += abs(vec_a[i] - vec_b[i]);
+    //dist += fabsf(vec_a[i] - vec_b[i]);
   }
   //return dist;
   return sqrtf(dist);
