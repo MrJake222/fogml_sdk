@@ -17,16 +17,32 @@
 #define LOF_VECTOR(i, config) &(config->data[i*config->vector_size])
 #define TINYML_MAX_DISTANCE  99999.0
 
+#define PT() fogml_printf_int(*(volatile unsigned int*)(0x10018))
+#define PTS() PT(); fogml_printf(" ");
+#define PTN() PT(); fogml_printf("\n");
+
+int cstart, cend;
+void CS() { asm volatile ("rdcycle %0" : "=r"(cstart)); }
+int  CE() { asm volatile ("rdcycle %0" : "=r"(cend)); return cend - cstart; }
+
 void tinyml_lof_init(tinyml_lof_config_t *config) {
 }
 
 float tinyml_lof_normal_distance_vec(float *vec_a, float *vec_b, int len) {
   float dist = 0;
+  float x;
+  int c1=0, c2=0, c3=0;
 
   for(int i=0; i<len; i++) {
-    dist += pow2f(vec_a[i] - vec_b[i]);
+    CS();    x = vec_a[i] - vec_b[i];    c1+=CE();
+    CS();    x = pow2f(x);               c2+=CE();
+    CS();    dist += x;                  c3+=CE();
     //dist += fabsf(vec_a[i] - vec_b[i]);
   }
+  //fogml_printf_float(dist); fogml_printf("\t");
+  //fogml_printf_int(c1);     fogml_printf(" ");
+  //fogml_printf_int(c2);     fogml_printf(" ");
+  //fogml_printf_int(c3);     fogml_printf("\n");
   //return dist;
   return sqrtf(dist);
 }
@@ -126,6 +142,7 @@ void tinyml_lof_learn(tinyml_lof_config_t *config) {
   if (config->n < (config->parameter_k + 1)) return;
 
   for(int i = 0; i < config->n; i++) {
+    //PTS();
     tinyml_lof_k_neighbours(i, neighbours, config);
 
     //Serial.print("Neighbours ");
@@ -138,10 +155,13 @@ void tinyml_lof_learn(tinyml_lof_config_t *config) {
     //Serial.println();
 
     //k-distance calculation
+    //PTS();
     config->k_distance[i] = tinyml_lof_normal_distance_vec(LOF_VECTOR(i,config), LOF_VECTOR(neighbours[config->parameter_k - 1],config), config->vector_size);
     //lrd distance calculation
+    //PTS();
     config->lrd[i] = tinyml_lof_reachability_density(LOF_VECTOR(i,config), neighbours, config);
 
+    //PTN();
     //Serial.print("K-distance/LRD ");
     //Serial.print(i);
     //Serial.print(":");
