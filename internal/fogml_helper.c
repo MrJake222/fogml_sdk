@@ -1,10 +1,11 @@
-/*float pow2f(float a) {
-	return a*a;
-}*/
+#include "fogml_helper.h"
 
 #include <stdint.h>
 #include <math.h>
-#include "../ports/fogml_ports.h"
+
+/*float pow2f(float a) {
+	return a*a;
+}*/
 
 static int C() { int c; asm volatile ("rdcycle %0" : "=r"(c)); return c; }
 
