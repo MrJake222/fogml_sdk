@@ -19,31 +19,28 @@
 
 int C() { int c; asm volatile ("rdcycle %0" : "=r"(c)); return c; }
 // cumulative distance function cycles used
-int cdist;
+int cdist, c1, c2, c2p, c3, c4;
+int wloop;
 
 void tinyml_lof_init(tinyml_lof_config_t *config) {
 }
 
 float tinyml_lof_normal_distance_vec(float *vec_a, float *vec_b, int len) {
-  //int ds = C();
+  int ds = C();
   float dist = 0;
   float x;
-  int s, c1=0, c2=0, c3=0, csq=0;
+  int s;
 
   for(int i=0; i<len; i++) {
-    /*s=C();*/    x = vec_a[i] - vec_b[i];    /*c1+=C()-s;*/
-    /*s=C();*/    x = pow2f(x);               /*c2+=C()-s;*/
-    /*s=C();*/    dist += x;                  /*c3+=C()-s;*/
+    s=C();    x = vec_a[i] - vec_b[i];    c1+=C()-s;
+    s=C();    x = pow2fc(x, &c2p);        c2+=C()-s;
+    s=C();    dist += x;                  c3+=C()-s;
     //dist += fabsf(vec_a[i] - vec_b[i]);
+    wloop++;
   }
-  /*s=C();*/      dist = sqrtf(dist);         /*csq=C()-s;*/
-  //cdist += C()-ds;
-  //fogml_printf_float(dist); fogml_printf("\t");
-  //fogml_printf_int(len);    fogml_printf("\t");
-  //fogml_printf_int(c1);     fogml_printf(" ");
-  //fogml_printf_int(c2);     fogml_printf(" ");
-  //fogml_printf_int(c3);     fogml_printf(" ");
-  //fogml_printf_int(csq);    fogml_printf("\n");
+  s=C();      dist = sqrtf(dist);         c4+=C()-s;
+
+  cdist += C()-ds;
   return dist;
 }
 
@@ -137,7 +134,7 @@ float tinyml_lof_score(float *vector, tinyml_lof_config_t *config) {
 }
 
 void tinyml_lof_learn(tinyml_lof_config_t *config) {
-  cdist = 0;
+  cdist=0; c1=0; c2=0; c2p=0; c3=0; c4=0; wloop=0;
   int ls = C();
   
   int neighbours[10];
@@ -173,6 +170,12 @@ void tinyml_lof_learn(tinyml_lof_config_t *config) {
     //Serial.println(i);
   }
   int le = C();
-  fogml_printf_int(cdist); fogml_printf(" ");
-  fogml_printf_int(le-ls);  fogml_printf("\n");
+  fogml_printf_int(le-ls); fogml_printf(" ");
+  fogml_printf_int(cdist); fogml_printf("\n");
+  fogml_printf_int(c1);    fogml_printf(" ");
+  fogml_printf_int(c2);    fogml_printf(" ");
+  fogml_printf_int(c2p);   fogml_printf(" ");
+  fogml_printf_int(c3);    fogml_printf(" ");
+  fogml_printf_int(c4);    fogml_printf("\n");
+  fogml_printf_int(wloop); fogml_printf("\n");
 }
