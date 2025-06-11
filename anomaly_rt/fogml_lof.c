@@ -19,7 +19,7 @@
 
 #define PROFILE
 
-int C() { int c; asm volatile ("rdcycle %0" : "=r"(c)); return c; }
+static int C() { int c; asm volatile ("rdcycle %0" : "=r"(c)); return c; }
 // cumulative distance function cycles used
 int cdist, c1, c2, c2m, c2r, c3, c4;
 int wloop;
@@ -125,6 +125,11 @@ float tinyml_lof_reachability_density(float *vector, int *neighbours, tinyml_lof
 }
 
 float tinyml_lof_score(float *vector, tinyml_lof_config_t *config) {
+  int ls = C();
+#ifdef PROFILE
+  cdist=0; c1=0; c2=0; c2m=0; c2r=0; c3=0; c4=0; wloop=0;
+#endif
+	
   int neighbours[10];
 
   float score = 0;
@@ -139,6 +144,19 @@ float tinyml_lof_score(float *vector, tinyml_lof_config_t *config) {
   score /= tinyml_lof_reachability_density(vector, neighbours, config);
 
   score /= config->parameter_k;
+  
+  int le = C();
+  fogml_printf_int(le-ls); fogml_printf("\n");
+#ifdef PROFILE
+  fogml_printf_int(cdist); fogml_printf("\n");
+  fogml_printf_int(c1);    fogml_printf(" ");
+  fogml_printf_int(c2);    fogml_printf(" ");
+  fogml_printf_int(c2m);   fogml_printf(" ");
+  fogml_printf_int(c2r);   fogml_printf(" ");
+  fogml_printf_int(c3);    fogml_printf(" ");
+  fogml_printf_int(c4);    fogml_printf("\n");
+  fogml_printf_int(wloop); fogml_printf("\n");
+#endif
   
   return score;
 }
