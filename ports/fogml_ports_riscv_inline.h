@@ -114,12 +114,13 @@ static void fogml_dsqac(float* acc, float x1, float x2, struct fogml_xfpu_cycles
 		float prevacc = *acc;
 	#endif
 	
+	int s;
 	#ifdef RISCV_XFPU
 		// custom instruction
-		asm("dsqa %[out], %[in1], %[in2]" : [out]"+r"(*acc) : [in1]"r"(x1), [in2]"r"(x2));
+		s=C();  asm("dsqa %[out], %[in1], %[in2]" : [out]"+r"(*acc) : [in1]"r"(x1), [in2]"r"(x2));  c->sq+=C()-s;
 	#else
 		// stdlib floating point
-		int s; float x;
+		float x;
 		s=C();  x = x1 - x2;             c->df+=C()-s;
 		s=C();  x = fogml_pow2fc(x, c);  c->sq+=C()-s;
 		s=C();  *acc += x;               c->ac+=C()-s;
