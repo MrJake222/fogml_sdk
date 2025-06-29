@@ -12,12 +12,13 @@
 */
 
 #include "fogml_anomaly.h"
-#include "fogml_helper.h"
+#include "fogml_ports.h"
 
 float distance(float *a, float* b, int k){
     float distance = 0.0;
     for(int i=0; i<k; i++) {
-        distance += pow2f(a[i] - b[i]);
+        //distance += fogml_pow2f(a[i] - b[i]);
+        fogml_dsqa(&distance, a[i], b[i]);
     }
     distance = sqrtf(distance);
     return distance;

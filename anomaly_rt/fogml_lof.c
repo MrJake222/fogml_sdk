@@ -12,16 +12,16 @@
 */
 
 #include "fogml_lof.h"
-#include "fogml_helper.h"
+#include "fogml_ports.h"
+#include <stdint.h>
 
 #define LOF_VECTOR(i, config) &(config->data[i*config->vector_size])
 #define TINYML_MAX_DISTANCE  99999.0
 
 #define PROFILE
 
-static int C() { int c; asm volatile ("rdcycle %0" : "=r"(c)); return c; }
-// cumulative distance function cycles used
-int cdist, c1, c2, c2m, c2r, c3, c4;
+// cumulative counter of cycles used
+struct fogml_xfpu_cycles c;
 int wloop;
 
 void tinyml_lof_init(tinyml_lof_config_t *config) {
@@ -29,24 +29,20 @@ void tinyml_lof_init(tinyml_lof_config_t *config) {
 
 float tinyml_lof_normal_distance_vec(float *vec_a, float *vec_b, int len) {
   float dist = 0;
-  float x;
   
 #ifdef PROFILE
   int ds = C();
-  int s;
+
   for(int i=0; i<len; i++) {
-    s=C();    x = vec_a[i] - vec_b[i];    c1+=C()-s;
-    s=C();    x = pow2fc(x, &c2m, &c2r);  c2+=C()-s;
-    s=C();    dist += x;                  c3+=C()-s;
+    fogml_dsqac(&dist, vec_a[i], vec_b[i], &c);
     wloop++;
   }
-  s=C();      dist = sqrtf(dist);         c4+=C()-s;
-  cdist += C()-ds;
+  int s = C();  dist = sqrtf(dist);  c.rt+=C()-s;
+  
+  c.dist += C()-ds;
 #else
   for(int i=0; i<len; i++) {
-    x = vec_a[i] - vec_b[i];
-    x = pow2f(x);
-    dist += x;
+    fogml_dsqa(&dist, vec_a[i], vec_b[i]);
   }
   dist = sqrtf(dist);
 #endif
@@ -127,7 +123,7 @@ float tinyml_lof_reachability_density(float *vector, int *neighbours, tinyml_lof
 float tinyml_lof_score(float *vector, tinyml_lof_config_t *config) {
   int ls = C();
 #ifdef PROFILE
-  cdist=0; c1=0; c2=0; c2m=0; c2r=0; c3=0; c4=0; wloop=0;
+  memset(&c, 0, sizeof(c));
 #endif
 	
   int neighbours[10];
@@ -148,14 +144,14 @@ float tinyml_lof_score(float *vector, tinyml_lof_config_t *config) {
   int le = C();
   fogml_printf_int(le-ls); fogml_printf("\n");
 #ifdef PROFILE
-  fogml_printf_int(cdist); fogml_printf("\n");
-  fogml_printf_int(c1);    fogml_printf(" ");
-  fogml_printf_int(c2);    fogml_printf(" ");
-  fogml_printf_int(c2m);   fogml_printf(" ");
-  fogml_printf_int(c2r);   fogml_printf(" ");
-  fogml_printf_int(c3);    fogml_printf(" ");
-  fogml_printf_int(c4);    fogml_printf("\n");
-  fogml_printf_int(wloop); fogml_printf("\n");
+  fogml_printf_int(c.dist);   fogml_printf("\n");
+  fogml_printf_int(c.df);     fogml_printf(" ");
+  fogml_printf_int(c.sq);     fogml_printf(" ");
+  fogml_printf_int(c.sqmul);  fogml_printf(" ");
+  fogml_printf_int(c.sqnorm); fogml_printf(" ");
+  fogml_printf_int(c.ac);     fogml_printf(" ");
+  fogml_printf_int(c.rt);     fogml_printf("\n");
+  fogml_printf_int(wloop);     fogml_printf("\n");
 #endif
   
   return score;
@@ -164,7 +160,7 @@ float tinyml_lof_score(float *vector, tinyml_lof_config_t *config) {
 void tinyml_lof_learn(tinyml_lof_config_t *config) {
   int ls = C();
 #ifdef PROFILE
-  cdist=0; c1=0; c2=0; c2m=0; c2r=0; c3=0; c4=0; wloop=0;
+  memset(&c, 0, sizeof(c));
 #endif
   
   int neighbours[10];
@@ -202,13 +198,13 @@ void tinyml_lof_learn(tinyml_lof_config_t *config) {
   int le = C();
   fogml_printf_int(le-ls); fogml_printf("\n");
 #ifdef PROFILE
-  fogml_printf_int(cdist); fogml_printf("\n");
-  fogml_printf_int(c1);    fogml_printf(" ");
-  fogml_printf_int(c2);    fogml_printf(" ");
-  fogml_printf_int(c2m);   fogml_printf(" ");
-  fogml_printf_int(c2r);   fogml_printf(" ");
-  fogml_printf_int(c3);    fogml_printf(" ");
-  fogml_printf_int(c4);    fogml_printf("\n");
-  fogml_printf_int(wloop); fogml_printf("\n");
+  fogml_printf_int(c.dist);   fogml_printf("\n");
+  fogml_printf_int(c.df);     fogml_printf(" ");
+  fogml_printf_int(c.sq);     fogml_printf(" ");
+  fogml_printf_int(c.sqmul);  fogml_printf(" ");
+  fogml_printf_int(c.sqnorm); fogml_printf(" ");
+  fogml_printf_int(c.ac);     fogml_printf(" ");
+  fogml_printf_int(c.rt);     fogml_printf("\n");
+  fogml_printf_int(wloop);     fogml_printf("\n");
 #endif
 }

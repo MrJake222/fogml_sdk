@@ -12,7 +12,7 @@
 */
 
 #include "fogml_dsp.h"
-#include "fogml_helper.h"
+#include "fogml_ports.h"
 
 int tinyml_dsp_processing_base(float *time_series_data, float *vector, int offset, tinyml_block_base_config_t *base_config, tinyml_dsp_config_t *config ) {
     float *sum = (float*)malloc(sizeof(float) * config->axis_n);
@@ -137,7 +137,8 @@ int tinyml_dsp_processing_energy(float *time_series_data, float *vector, int off
 
         for(int i=0; i<config->time_ticks; i++) {
             float v = time_series_data[i * config->axis_n + j];
-            energy[j] += pow2f(v-mean);
+            // energy[j] += fogml_pow2f(v-mean);
+            fogml_dsqa(&energy[j], v, mean);
         }
 
         vector[int_offset++] = energy[j];
@@ -164,7 +165,7 @@ int tinyml_dsp_processing_variance(float *time_series_data, float *vector, int o
             sum2[j] += v*v;
         }
 
-        vector[int_offset++] = sum2[j] / config->time_ticks - pow2f(sum[j] / config->time_ticks);
+        vector[int_offset++] = sum2[j] / config->time_ticks - fogml_pow2f(sum[j] / config->time_ticks);
     }
 
     free(sum);
