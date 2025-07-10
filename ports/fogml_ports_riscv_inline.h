@@ -11,8 +11,8 @@
    limitations under the License.
 */
 
-#define RISCV_XFPU
-//#define RISCV_XFPU_CHECK
+// #define RISCV_XFPU
+// #define RISCV_XFPU_CHECK
 
 #ifndef RISCV_XFPU_HEADER
 #define RISCV_XFPU_HEADER
